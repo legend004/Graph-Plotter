@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="author" content="Abubakr Ahmed">
+	<meta name="description" content="A simple web page designed for math users to plot graphs and functions">
+    <title>Graph Plotter</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjs@11.6.0/lib/browser/math.js"></script>
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <div class="help-button" onclick="openSplash()">?</div>
+        <h1>Graph Plotter</h1>
+        
+        <div class="splash-screen" id="splashScreen">
+            <div class="splash-content">
+                <button class="close-splash" onclick="closeSplash()">Close</button>
+                <h2>Graph Plotter Help</h2>
+                
+                <h3>Basic Usage</h3>
+                <ul>
+                    <li>Enter mathematical functions in the "Enter Function" field</li>
+                    <li>Click "Add Function" to plot the function</li>
+                    <li>Use the calculator helper (click on input field) for easy function entry</li>
+                    <li>Adjust graph settings in the Settings tab</li>
+                    <li>Plot data points in the Data tab</li>
+                </ul>
+                
+                <h3>Function Syntax</h3>
+                <ul>
+                    <li><strong>Basic operations:</strong> +, -, *, /, ^ (power)</li>
+                    <li><strong>Trigonometric functions:</strong> sin(x), cos(x), tan(x)</li>
+                    <li><strong>Inverse trig functions:</strong> asin(x), acos(x), atan(x) - use Shift button</li>
+                    <li><strong>Logarithms:</strong> log(x) (base 10), ln(x) (natural log)</li>
+                    <li><strong>Square root:</strong> sqrt(x)</li>
+                    <li><strong>Constants:</strong> pi (π), e</li>
+                    <li><strong>Absolute value:</strong> abs(x)</li>
+                    <li><strong>Rounding:</strong> floor(x), ceil(x), round(x)</li>
+                </ul>
+                
+                <h3>Examples</h3>
+                <ul>
+                    <li>Quadratic: x^2 + 2*x + 1</li>
+                    <li>Trigonometric: 3*sin(2*x) + cos(x)</li>
+                    <li>Exponential: e^(x/2)</li>
+                    <li>Logarithmic: log(x+1)</li>
+                    <li>Piecewise: (x < 0) ? -x : x^2</li>
+                </ul>
+                
+                <h3>Tips</h3>
+                <ul>
+                    <li>Use parentheses to ensure proper order of operations</li>
+                    <li>Click on any plotted function in the legend to show/hide it</li>
+                    <li>Hover over points to see coordinates</li>
+                    <li>Use the "Export as Image" button to save your graph</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="graph-container">
+            <div class="graph-wrapper">
+                <canvas id="graphCanvas"></canvas>
+            </div>
+            
+            <div class="controls">
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-button active" onclick="openTab('function-tab')">Functions</button>
+                        <button class="tab-button" onclick="openTab('data-tab')">Data</button>
+                        <button class="tab-button" onclick="openTab('settings-tab')">Settings</button>
+                    </div>
+                    
+                    <div id="function-tab" class="tab-content active">
+                        <div class="form-group">
+                            <label for="functionInput">Enter Function (y = ):</label>
+                            <input type="text" id="functionInput" placeholder="e.g., x^2 + 3*sin(x)" value="x^2" onclick="toggleCalculatorHelper()">
+                            <div class="calculator-helper" id="calculatorHelper">
+                                <div class="calculator-buttons">
+                                    <button onclick="insertSymbol('x')">x</button>
+                                    <button onclick="insertSymbol('y')">y</button>
+                                    <button onclick="insertSymbol('^')">^</button>
+                                    <button onclick="insertSymbol('(')">(</button>
+                                    <button onclick="insertSymbol(')')">)</button>
+                                    <button onclick="insertSymbol('+')">+</button>
+                                    <button onclick="insertSymbol('-')">-</button>
+                                    <button onclick="insertSymbol('*')">*</button>
+                                    <button onclick="insertSymbol('/')">/</button>
+                                    <button onclick="insertSymbol('sqrt(')">√</button>
+                                    <button onclick="insertSymbol('pi')">π</button>
+                                    <button onclick="insertSymbol('e')">e</button>
+                                    <button onclick="toggleShift()" id="shiftButton">Shift</button>
+                                </div>
+                                <div class="calculator-buttons calculator-advanced" id="advancedFunctions">
+                                    <button onclick="insertSymbol('sin(')">sin</button>
+                                    <button onclick="insertSymbol('cos(')">cos</button>
+                                    <button onclick="insertSymbol('tan(')">tan</button>
+                                    <button onclick="insertSymbol('asin(')">sin⁻¹</button>
+                                    <button onclick="insertSymbol('acos(')">cos⁻¹</button>
+                                    <button onclick="insertSymbol('atan(')">tan⁻¹</button>
+                                    <button onclick="insertSymbol('log(')">log</button>
+                                    <button onclick="insertSymbol('ln(')">ln</button>
+                                    <button onclick="insertSymbol('abs(')">abs</button>
+                                    <button onclick="insertSymbol('floor(')">floor</button>
+                                    <button onclick="insertSymbol('ceil(')">ceil</button>
+                                    <button onclick="insertSymbol('round(')">round</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="functionColor">Line Color:</label>
+                            <input type="color" id="functionColor" value="#3498db">
+                        </div>
+                        <button onclick="addFunction()">Add Function</button>
+                        
+                        <div class="function-list" id="functionList">
+                            <!-- Functions will be added here -->
+                        </div>
+                    </div>
+                    
+                    <div id="data-tab" class="tab-content">
+                        <div class="form-group">
+                            <label for="dataInput">Enter Data Points (x,y; one per line):</label>
+                            <textarea id="dataInput" rows="5" style="width: 100%;" placeholder="1,2&#10;2,4&#10;3,1"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="dataColor">Point Color:</label>
+                            <input type="color" id="dataColor" value="#e74c3c">
+                        </div>
+                        <button onclick="addDataPoints()">Plot Data</button>
+                    </div>
+                    
+                    <div id="settings-tab" class="tab-content">
+                        <div class="form-group">
+                            <label for="xMin">X Minimum:</label>
+                            <input type="number" id="xMin" value="-10">
+                        </div>
+                        <div class="form-group">
+                            <label for="xMax">X Maximum:</label>
+                            <input type="number" id="xMax" value="10">
+                        </div>
+                        <div class="form-group">
+                            <label for="yMin">Y Minimum:</label>
+                            <input type="number" id="yMin" value="-10">
+                        </div>
+                        <div class="form-group">
+                            <label for="yMax">Y Maximum:</label>
+                            <input type="number" id="yMax" value="10">
+                        </div>
+                        <div class="form-group">
+                            <label for="gridColor">Grid Color:</label>
+                            <input type="color" id="gridColor" value="#dddddd">
+                        </div>
+                        <button onclick="updateGraphSettings()">Update Graph</button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <button onclick="clearAll()">Clear All</button>
+                    <button onclick="exportAsImage()">Export as Image</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
